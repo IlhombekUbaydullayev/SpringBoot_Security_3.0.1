@@ -27,13 +27,14 @@ internal class BasicController(
     @PostMapping("/logins")
     fun login(@RequestBody request: LoginRequestDTO): ResponseEntity<String> {
         val token = UsernamePasswordAuthenticationToken(request.username, request.password)
-        authenticationManager.authenticate(token)
-        val jwt = jwtUtil.generateToken(request.username,CompanyRoleName.ROLE_USER)
+        val authenticate = authenticationManager.authenticate(token)
+        val user: User = authenticate.principal as User
+        val jwt = jwtUtil.generateToken(user.email,user.systemRoleName!!)
         return ResponseEntity.ok(jwt)
     }
 
-    @PreAuthorize("hasAnyRole('ROLE_HR_MANAGER')")
-    @GetMapping("/hello")
+    @PreAuthorize("hasRole('ROLE_MANAGER')")
+    @GetMapping("api/v1/users")
     fun get(): ResponseEntity<String> {
         return ResponseEntity.ok("Hello")
     }
@@ -52,7 +53,6 @@ data class LoginRequestDTO(
 )
 
 data class UserDto(
-    var firstName : String,
     var email : String,
     var password: String
 )

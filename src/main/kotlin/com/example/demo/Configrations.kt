@@ -4,9 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Lazy
+import org.springframework.data.domain.AuditorAware
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
@@ -16,7 +19,17 @@ import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
 @Configuration
+@EnableJpaAuditing
+class AuditingConfig {
+    @Bean
+    fun auditorProvider() : AuditorAware<Long> {
+        return SpringSecurityAuditAwareImpl()
+    }
+}
+
+@Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 internal class WebSecurityConfiguration {
 
     @Autowired
@@ -27,11 +40,11 @@ internal class WebSecurityConfiguration {
     @Autowired
     var googleCloudAuthenticationProvider: GoogleCloudAuthenticationProvider? = null
 
-    @Autowired
-    fun registerProvider(auth: AuthenticationManagerBuilder) {
-        auth.authenticationProvider(customAuthenticationProvider)
-            .authenticationProvider(googleCloudAuthenticationProvider)
-    }
+//    @Autowired
+//    fun registerProvider(auth: AuthenticationManagerBuilder) {
+//        auth.authenticationProvider(customAuthenticationProvider)
+//            .authenticationProvider(googleCloudAuthenticationProvider)
+//    }
 
     @Bean
     @Throws(Exception::class)

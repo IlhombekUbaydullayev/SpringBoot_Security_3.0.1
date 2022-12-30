@@ -3,9 +3,12 @@ package com.example.demo
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
+import org.springframework.data.domain.AuditorAware
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
 import java.security.Key
 import java.sql.Date
+import java.util.*
 
 
 @Service
@@ -71,5 +74,16 @@ class JwtUtil {
     companion object {
         private const val expireTime = (1000 * 60 * 60 * 24).toLong()
         private const val secretKey = "maxfiysuzhechkimbilmasin"
+    }
+}
+
+class SpringSecurityAuditAwareImpl : AuditorAware<Long> {
+    override fun getCurrentAuditor(): Optional<Long> {
+        val authentication = SecurityContextHolder.getContext().authentication
+        if (!(authentication == null || !authentication.isAuthenticated || "anonymousUser" == "" + authentication.principal)) {
+            val uuid = (authentication.principal as User).id
+            return Optional.of(uuid!!)
+        }
+        return Optional.empty()
     }
 }

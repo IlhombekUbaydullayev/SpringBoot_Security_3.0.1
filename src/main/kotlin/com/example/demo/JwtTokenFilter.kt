@@ -7,6 +7,7 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
@@ -43,6 +44,9 @@ class JwtTokenFilter : OncePerRequestFilter() {
 //        filterChain.doFilter(httpServletRequest, httpServletResponse)
 //    }
 
+    @Autowired
+    private val userDetailsService: UserDetailsService? = null
+
     @Throws(ServletException::class, IOException::class)
     override fun doFilterInternal(
         httpServletRequest: HttpServletRequest,
@@ -54,7 +58,8 @@ class JwtTokenFilter : OncePerRequestFilter() {
             authorization = authorization.substring(7)
             val email = jwtUtil.getEmailFromToken(authorization)
             if (email != null) {
-                val upassToken = UsernamePasswordAuthenticationToken(email, null, ArrayList())
+                val userDetails = userDetailsService?.loadUserByUsername(email)
+                val upassToken = UsernamePasswordAuthenticationToken(email, null,userDetails?.authorities)
                 upassToken.details = WebAuthenticationDetailsSource().buildDetails(httpServletRequest)
                 SecurityContextHolder.getContext().authentication = upassToken
             }
